@@ -2,8 +2,8 @@ import pyglet
 import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib import cm
+from PIL import Image
 # %%
-
 
 def calc_pixel_array(x_center: float = 0, y_center: float = 0, scale: float = 1.0, width: int = 500, height: int = 500, threshold: int = 200):
     row_colors = []
@@ -38,14 +38,16 @@ def calc_pixel_array(x_center: float = 0, y_center: float = 0, scale: float = 1.
     return pixel_array
 
 
-def plot_pixel_array(pixel_array, cmap: str = 'gnuplot', show_plot: bool = False):
+def plot_pixel_array(pixel_array, cmap: str = 'gnuplot'):
     """Drawing the array with matplotlib (fast)"""
     plt.imshow(pixel_array.T, cm.get_cmap(cmap))
-    plt.axis("off")
-    plt.savefig("curent_mandelbrot.png", bbox_inches='tight')
-    if show_plot:
-        plt.show()
 
+def save_mandelbrot(pixel_array, filename = 'mandelbrot.png'):
+    img = Image.fromarray(pixel_array.T)
+    if img.mode != 'RGB':
+        img = img.convert('RGB')
+    img.save(filename)
+    
 
 def draw_pixel_array(pixel_array):
     """Drawing the array with pyglet"""
@@ -75,6 +77,7 @@ def scale_array(array, scale=1):
 
 
 # %%
-pixel_array = calc_pixel_array(width = 200)
+pixel_array = calc_pixel_array()
+save_mandelbrot(pixel_array)
 # plot_pixel_array(pixel_array)
 draw_pixel_array(pixel_array)
