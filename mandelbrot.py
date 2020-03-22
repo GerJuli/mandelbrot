@@ -1,3 +1,4 @@
+import pyglet
 import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib import cm
@@ -30,21 +31,50 @@ def calc_pixel_array(x_center: float = 0, y_center: float = 0, scale: float = 1.
                 color = 0
             column_colors.append(color)
         row_colors.append(column_colors)
-    pixel_array = np.array(row_colors).T
+    pixel_array = np.array(row_colors)
     min_color = np.min(pixel_array[pixel_array > 0])
     pixel_array[pixel_array == 0] = min_color
     pixel_array = scale_array(pixel_array, 255)
     return pixel_array
 
 
-def plot_pixel_array(pixel_array, cmap: str = 'gnuplot'):
-    plt.imshow(pixel_array, cm.get_cmap(cmap))
-    plt.show()
+def plot_pixel_array(pixel_array, cmap: str = 'gnuplot', show_plot: bool = False):
+    """Drawing the array with matplotlib (fast)"""
+    plt.imshow(pixel_array.T, cm.get_cmap(cmap))
+    plt.axis("off")
+    plt.savefig("curent_mandelbrot.png", bbox_inches='tight')
+    if show_plot:
+        plt.show()
+
+
+def draw_pixel_array(pixel_array):
+    """Drawing the array with pyglet"""
+    shape = pixel_array.shape
+    window = pyglet.window.Window(width=shape[0], height=shape[1])
+
+    @window.event
+    def on_draw():
+        main_batch = pyglet.graphics.Batch()
+        for x in range(window.width):
+            for y in range(window.height):
+                color = int(pixel_array[x, y])
+                pyglet.graphics.draw(1, pyglet.gl.GL_POINTS,
+                                     ('v2i', (x, y)),
+                                     ('c3B', (color, color, color)))
+        main_batch.draw()
+
+    @window.event
+    def on_mouse_press(x, y, button, modifiers):
+        print(f"Click at {x}, {y}")
+
+    pyglet.app.run()
 
 
 def scale_array(array, scale=1):
     return scale*(array-np.min(array))/(np.max(array) - np.min(array))
 
 
-pixel_array = calc_pixel_array()
-plot_pixel_array(pixel_array)
+# %%
+pixel_array = calc_pixel_array(width = 200)
+# plot_pixel_array(pixel_array)
+draw_pixel_array(pixel_array)
